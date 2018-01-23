@@ -10,14 +10,17 @@ import com.igalata.bubblepicker.BubblePickerListener
 import com.igalata.bubblepicker.R
 import com.igalata.bubblepicker.adapter.BubblePickerAdapter
 import com.igalata.bubblepicker.model.Color
+import com.igalata.bubblepicker.model.PercentageItemsModel
 import com.igalata.bubblepicker.model.PickerItem
+import com.igalata.bubblepicker.physics.CircleBody
 
 /**
  * Created by irinagalata on 1/19/17.
  */
 class BubblePicker : GLSurfaceView {
 
-    @ColorInt var background: Int = 0
+    @ColorInt
+    var background: Int = 0
         set(value) {
             field = value
             renderer.backgroundColor = Color(value)
@@ -26,6 +29,7 @@ class BubblePicker : GLSurfaceView {
             message = "Use BubblePickerAdapter for the view setup instead")
     var items: ArrayList<PickerItem>? = null
         set(value) {
+            //TODO insert here the external variable
             field = value
             renderer.items = value ?: ArrayList()
         }
@@ -35,6 +39,7 @@ class BubblePicker : GLSurfaceView {
             if (value != null) {
                 renderer.items = ArrayList((0..value.totalCount - 1)
                         .map { value.getItem(it) }.toList())
+
             }
         }
     var maxSelectedCount: Int? = null
@@ -77,6 +82,16 @@ class BubblePicker : GLSurfaceView {
         attrs?.let { retrieveAttrubutes(attrs) }
     }
 
+    fun getBodies(): ArrayList<CircleBody>
+    {
+        return renderer.getBodies()
+    }
+
+    fun getAllPickerItems(): ArrayList<MyItem>
+    {
+        return renderer.getAllPickerItems()
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -86,7 +101,8 @@ class BubblePicker : GLSurfaceView {
                 previousY = event.y
             }
             MotionEvent.ACTION_UP -> {
-                if (isClick(event)) renderer.resize(event.x, event.y)
+                if (isClick(event))
+                    renderer.resize(event.x, event.y)
                 renderer.release()
             }
             MotionEvent.ACTION_MOVE -> {
@@ -123,5 +139,4 @@ class BubblePicker : GLSurfaceView {
 
         array.recycle()
     }
-
 }

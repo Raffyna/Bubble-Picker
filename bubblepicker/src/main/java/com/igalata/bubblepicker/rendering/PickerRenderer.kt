@@ -3,10 +3,13 @@ package com.igalata.bubblepicker.rendering
 import android.opengl.GLES20
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
+import android.util.Log
 import android.view.View
 import com.igalata.bubblepicker.*
 import com.igalata.bubblepicker.model.Color
 import com.igalata.bubblepicker.model.PickerItem
+import com.igalata.bubblepicker.physics.Border
+import com.igalata.bubblepicker.physics.CircleBody
 import com.igalata.bubblepicker.physics.Engine
 import com.igalata.bubblepicker.rendering.BubbleShader.A_POSITION
 import com.igalata.bubblepicker.rendering.BubbleShader.A_UV
@@ -54,7 +57,8 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
         get() = if (glView.width < glView.height) glView.height.toFloat() / glView.width.toFloat() else 1f
     private val scaleY: Float
         get() = if (glView.width < glView.height) 1f else glView.width.toFloat() / glView.height.toFloat()
-    private val circles = ArrayList<Item>()
+
+    val circles = ArrayList<MyItem>()
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         glClearColor(backgroundColor?.red ?: 1f, backgroundColor?.green ?: 1f,
@@ -76,12 +80,24 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
     private fun initialize() {
         clear()
         Engine.centerImmediately = centerImmediately
+
+
+
         Engine.build(items.size, scaleX, scaleY).forEachIndexed { index, body ->
-            circles.add(Item(items[index], body))
+            circles.add(MyItem(items[index], body))
         }
-        items.forEach { if (it.isSelected) Engine.resize(circles.first { circle -> circle.pickerItem == it }) }
+
+
+
+        items.forEach { if (it.isSelected) Engine.resize(circles.first { circle -> circle.pickerItem == it }, circles) }
         if (textureIds == null) textureIds = IntArray(circles.size * 2)
         initializeArrays()
+    }
+
+
+    fun getAllPickerItems(): ArrayList<MyItem>
+    {
+        return circles
     }
 
     private fun initializeArrays() {
@@ -92,7 +108,7 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
         uvBuffer = textureVertices?.toFloatBuffer()
     }
 
-    private fun initializeItem(item: Item, index: Int) {
+    private fun initializeItem(item: MyItem, index: Int) {
         initializeVertices(item, index)
         textureVertices?.passTextureVertices(index)
         item.bindTextures(textureIds ?: IntArray(0), index)
@@ -103,7 +119,7 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
         vertices?.forEachIndexed { i, float -> verticesBuffer?.put(i, float) }
     }
 
-    private fun initializeVertices(body: Item, index: Int) {
+    private fun initializeVertices(body: MyItem, index: Int) {
         val radius = body.radius
         val radiusX = radius * scaleX
         val radiusY = radius * scaleY
@@ -157,11 +173,22 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
     }
 
     fun resize(x: Float, y: Float) = getItem(Vec2(x, glView.height - y))?.apply {
-        if (Engine.resize(this)) {
+        if (Engine.resize(this, circles)) {
             listener?.let {
-                if (circleBody.increased) it.onBubbleDeselected(pickerItem) else it.onBubbleSelected(pickerItem)
+
+                if (circleBody.increased) {
+
+                    it.onBubbleDeselected(pickerItem)
+                } else {
+
+                    it.onBubbleSelected(pickerItem)
+                }
             }
         }
+    }
+
+    fun getBodies(): ArrayList<CircleBody> {
+        return Engine.getBodies()
     }
 
     private fun clear() {

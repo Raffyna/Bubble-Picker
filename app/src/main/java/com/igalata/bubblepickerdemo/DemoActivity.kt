@@ -5,11 +5,13 @@ import android.os.Build
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.igalata.bubblepicker.BubblePickerListener
 import com.igalata.bubblepicker.adapter.BubblePickerAdapter
-import com.igalata.bubblepicker.model.BubbleGradient
 import com.igalata.bubblepicker.model.PickerItem
+import com.igalata.bubblepickerdemo.R.id.*
 import kotlinx.android.synthetic.main.activity_demo.*
 
 /**
@@ -38,8 +40,20 @@ class DemoActivity : AppCompatActivity() {
             subtitleTextView.letterSpacing = 0.06f
             hintTextView.letterSpacing = 0.05f
         }
+        titleTextView.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(v: View?) {
+                Log.d("Raffy", "========================")
+                var bodies = picker.getAllPickerItems()
+                var i = 0
+                for(i in bodies.indices)
+                {
+                    Log.d("Raffy", "Radius "+bodies[i].radius +" | id => "+bodies[i].pickerItem.id + " | name => "+bodies[i].pickerItem.title)
+                }
+            }
+        })
 
         val titles = resources.getStringArray(R.array.countries)
+        val ids = resources.getStringArray(R.array.ids)
         val colors = resources.obtainTypedArray(R.array.colors)
         val images = resources.obtainTypedArray(R.array.images)
 
@@ -50,11 +64,12 @@ class DemoActivity : AppCompatActivity() {
             override fun getItem(position: Int): PickerItem {
                 return PickerItem().apply {
                     title = titles[position]
-                    gradient = BubbleGradient(colors.getColor((position * 2) % 8, 0),
-                            colors.getColor((position * 2) % 8 + 1, 0), BubbleGradient.VERTICAL)
+                    id = ids[position]
+//                    gradient = BubbleGradient(colors.getColor((position * 2) % 8, 0),
+//                            colors.getColor((position * 2) % 8 + 1, 0), BubbleGradient.VERTICAL)
                     typeface = mediumTypeface
                     textColor = ContextCompat.getColor(this@DemoActivity, android.R.color.white)
-                    backgroundImage = ContextCompat.getDrawable(this@DemoActivity, images.getResourceId(position, 0))
+                    backgroundColor = ContextCompat.getColor(this@DemoActivity, R.color.mybackground)//ContextCompat.getDrawable(this@DemoActivity, images.getResourceId(position, 0))
                 }
             }
         }
@@ -62,11 +77,18 @@ class DemoActivity : AppCompatActivity() {
         colors.recycle()
         images.recycle()
 
-        picker.bubbleSize = 20
-        picker.listener = object : BubblePickerListener {
-            override fun onBubbleSelected(item: PickerItem) = toast("${item.title} selected")
 
-            override fun onBubbleDeselected(item: PickerItem) = toast("${item.title} deselected")
+        picker.bubbleSize = 5
+        picker.listener = object : BubblePickerListener {
+            override fun onBubbleSelected(item: PickerItem)
+            {
+
+
+
+            }
+
+            override fun onBubbleDeselected(item: PickerItem) {
+            }
         }
     }
 

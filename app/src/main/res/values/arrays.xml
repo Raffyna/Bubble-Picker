@@ -7,18 +7,38 @@
         <item>Brazil</item>
         <item>Chile</item>
         <item>Costa Rica</item>
-        <item>Dominican Republic</item>
-        <item>Mexico</item>
-        <item>Nicaragua</item>
-        <item>Peru</item>
-        <item>Venezuela</item>
-        <item>Cuba</item>
-        <item>Ecuador</item>
-        <item>El Salvador</item>
-        <item>Haiti</item>
-        <item>Panama</item>
-        <item>Paraguay</item>
+        <!--<item>Dominican Republic</item>-->
+        <!--<item>Mexico</item>-->
+        <!--<item>Nicaragua</item>-->
+        <!--<item>Peru</item>-->
+        <!--<item>Venezuela</item>-->
+        <!--<item>Cuba</item>-->
+        <!--<item>Ecuador</item>-->
+        <!--<item>El Salvador</item>-->
+        <!--<item>Haiti</item>-->
+        <!--<item>Panama</item>-->
+        <!--<item>Paraguay</item>-->
     </string-array>
+
+    <string-array name="ids">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5 Rica</item>
+        <!--<item>Dominican Republic</item>-->
+        <!--<item>Mexico</item>-->
+        <!--<item>Nicaragua</item>-->
+        <!--<item>Peru</item>-->
+        <!--<item>Venezuela</item>-->
+        <!--<item>Cuba</item>-->
+        <!--<item>Ecuador</item>-->
+        <!--<item>El Salvador</item>-->
+        <!--<item>Haiti</item>-->
+        <!--<item>Panama</item>-->
+        <!--<item>Paraguay</item>-->
+    </string-array>
+
 
     <integer-array name="images">
         <item>@drawable/argentina</item>
@@ -40,6 +60,7 @@
     </integer-array>
 
     <integer-array name="colors">
+        <item>@color/mybackground</item>
         <item>@color/roseStart</item>
         <item>@color/roseEnd</item>
         <item>@color/blueStart</item>

@@ -1,5 +1,6 @@
 package com.igalata.bubblepicker.physics
 
+import android.util.Log
 import org.jbox2d.collision.shapes.CircleShape
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.*
@@ -7,9 +8,7 @@ import org.jbox2d.dynamics.*
 /**
  * Created by irinagalata on 1/26/17.
  */
-class CircleBody(val world: World, var position: Vec2, var radius: Float, var increasedRadius: Float, var density: Float) {
-
-    val decreasedRadius: Float = radius
+class CircleBody( private val world: World, var position: Vec2, var radius: Float, var increasedRadius: Float, var density: Float) {
 
     var isIncreasing = false
 
@@ -67,25 +66,42 @@ class CircleBody(val world: World, var position: Vec2, var radius: Float, var in
         }
     }
 
-    fun resize(step: Float) = if (increased) decrease(step) else increase(step)
+    /**
+     * Increase or decrease the bubble
+     */
+    fun resize(step: Float, bubblesNumber: Int, canZoom: Boolean, numberBubbleActive:Int ) {
+        if (toBeDecreased)
+            decrease(step, bubblesNumber, canZoom, numberBubbleActive)
+        else if (toBeIncreased)
+            increase(step, bubblesNumber, canZoom, numberBubbleActive)
+    }
 
-    fun decrease(step: Float) {
+    fun decrease(step: Float, bubblesNumber: Int, canZoom: Boolean, numberBubbleActive: Int) {
         isDecreasing = true
-        radius -= step
-        reset()
+        if (radius > 0.1) {
+            radius -= ((bubblesNumber - 1)) / 100f
+            val s = String.format("%.2f", radius)
+            radius = s.toFloat()
 
-        if (Math.abs(radius - decreasedRadius) < step) {
+            Log.d("Raffy", " DECREASE | Radius => " + radius)
+            reset()
             increased = false
+            clear()
+        }else
+        {
             clear()
         }
     }
 
-    fun increase(step: Float) {
-        isIncreasing = true
-        radius += step
-        reset()
+    fun increase(step: Float, bubblesNumber: Int, canZoom: Boolean, numberBubbleActive:Int) {
 
-        if (Math.abs(radius - increasedRadius) < step) {
+        if (canZoom) {
+            isIncreasing = true
+            radius += ((bubblesNumber - 1) * (numberBubbleActive-1)) / 100f
+            val s = String.format("%.2f", radius)
+            radius = s.toFloat()
+            Log.d("Raffy", "INCREASE | Radius => " + radius)
+            reset()
             increased = true
             clear()
         }
@@ -95,9 +111,22 @@ class CircleBody(val world: World, var position: Vec2, var radius: Float, var in
         physicalBody.fixtureList?.shape?.m_radius = radius + margin
     }
 
-    fun defineState() {
-        toBeIncreased = !increased
-        toBeDecreased = increased
+    fun defineState(tobeIncrease: Boolean) {
+        if (tobeIncrease) {
+//            toBeIncreased = !increased
+//            toBeDecreased = increased
+            toBeIncreased = true
+            toBeDecreased = false
+        } else {
+            toBeIncreased = false
+            toBeDecreased = true
+        }
+
+    }
+
+    fun defineDecreasedState() {
+        toBeIncreased = false
+        toBeDecreased = true
     }
 
     private fun clear() {

@@ -8,7 +8,6 @@ import com.igalata.bubblepicker.model.PickerItem
 interface BubblePickerAdapter {
 
     val totalCount: Int
-
     fun getItem(position: Int): PickerItem
 
 }
