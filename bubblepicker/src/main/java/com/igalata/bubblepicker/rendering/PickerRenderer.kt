@@ -32,6 +32,7 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
         set(value) {
             Engine.maxSelectedCount = value
         }
+    var textSize = 0.25f
     var bubbleSize = 50
         set(value) {
             Engine.radius = value
@@ -48,8 +49,10 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
 
     private var programId = 0
     private var verticesBuffer: FloatBuffer? = null
+    private var textVerticesBuffer: FloatBuffer? = null
     private var uvBuffer: FloatBuffer? = null
     private var vertices: FloatArray? = null
+    private var textVertices: FloatArray? = null
     private var textureVertices: FloatArray? = null
     private var textureIds: IntArray? = null
 
@@ -81,8 +84,6 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
         clear()
         Engine.centerImmediately = centerImmediately
 
-
-
         Engine.build(items.size, scaleX, scaleY).forEachIndexed { index, body ->
             circles.add(MyItem(items[index], body))
         }
@@ -90,7 +91,7 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
 
 
         items.forEach { if (it.isSelected) Engine.resize(circles.first { circle -> circle.pickerItem == it }, circles) }
-        if (textureIds == null) textureIds = IntArray(circles.size * 2)
+        if (textureIds == null) textureIds = IntArray(circles.size * 3)
         initializeArrays()
     }
 
@@ -102,9 +103,11 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
 
     private fun initializeArrays() {
         vertices = FloatArray(circles.size * 8)
+        textVertices = FloatArray(circles.size * 8)
         textureVertices = FloatArray(circles.size * 8)
         circles.forEachIndexed { i, item -> initializeItem(item, i) }
         verticesBuffer = vertices?.toFloatBuffer()
+        textVerticesBuffer = textVertices?.toFloatBuffer()
         uvBuffer = textureVertices?.toFloatBuffer()
     }
 
@@ -117,6 +120,7 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
     private fun calculateVertices() {
         circles.forEachIndexed { i, item -> initializeVertices(item, i) }
         vertices?.forEachIndexed { i, float -> verticesBuffer?.put(i, float) }
+        textVertices?.forEachIndexed { i, float -> textVerticesBuffer?.put(i, float) }
     }
 
     private fun initializeVertices(body: MyItem, index: Int) {
@@ -124,9 +128,14 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
         val radiusX = radius * scaleX
         val radiusY = radius * scaleY
 
+        val textW = textSize*scaleX
+        val textH = textSize*scaleY
+
         body.initialPosition.apply {
             vertices?.put(8 * index, floatArrayOf(x - radiusX, y + radiusY, x - radiusX, y - radiusY,
                     x + radiusX, y + radiusY, x + radiusX, y - radiusY))
+            textVertices?.put(8 * index, floatArrayOf(x - textW, y + textH, x - textW, y - textH,
+                    x + textW, y + textH, x + textW, y - textH))
         }
     }
 
@@ -135,7 +144,10 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
         glUniform4f(glGetUniformLocation(programId, U_BACKGROUND), 1f, 1f, 1f, 0f)
         verticesBuffer?.passToShader(programId, A_POSITION)
         uvBuffer?.passToShader(programId, A_UV)
-        circles.forEachIndexed { i, circle -> circle.drawItself(programId, i, scaleX, scaleY) }
+        circles.forEachIndexed { i, circle -> circle.drawBubbleRect(programId, i, scaleX, scaleY) }
+
+        textVerticesBuffer?.passToShader(programId, A_POSITION)
+        circles.forEachIndexed { i, circle -> circle.drawTextRext(programId, i, scaleX, scaleY) }
     }
 
     private fun enableTransparency() {
