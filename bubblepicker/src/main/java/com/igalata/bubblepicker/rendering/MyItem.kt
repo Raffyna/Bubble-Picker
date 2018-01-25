@@ -38,6 +38,7 @@ data class MyItem(val pickerItem: PickerItem, val circleBody: CircleBody) {
         get() = circleBody.isVisible
     private var texture: Int = 0
     private var imageTexture: Int = 0
+    private var textTexture: Int = 0;
     private val currentTexture: Int
         get() = if (circleBody.increased || circleBody.isIncreasing) imageTexture else texture
     private val bitmapSize = 256f
@@ -53,32 +54,49 @@ data class MyItem(val pickerItem: PickerItem, val circleBody: CircleBody) {
             }
         }
 
-    fun drawItself(programId: Int, index: Int, scaleX: Float, scaleY: Float) {
+    fun drawRect(programId: Int,index: Int,textureId:Int,matrix:FloatArray){
         glActiveTexture(GL_TEXTURE)
-        glBindTexture(GL_TEXTURE_2D, currentTexture)
+        glBindTexture(GL_TEXTURE_2D, textureId)
         glUniform1i(glGetUniformLocation(programId, BubbleShader.U_TEXT), 0)
         glUniform1i(glGetUniformLocation(programId, BubbleShader.U_VISIBILITY), if (isVisible) 1 else -1)
-        glUniformMatrix4fv(glGetUniformLocation(programId, U_MATRIX), 1, false, calculateMatrix(scaleX, scaleY), 0)
+        glUniformMatrix4fv(glGetUniformLocation(programId, U_MATRIX), 1, false,matrix, 0)
         glDrawArrays(GL_TRIANGLE_STRIP, index * 4, 4)
     }
 
+    fun drawTextRext(programId: Int, index: Int,scaleX: Float, scaleY: Float){
+        drawRect(programId,index,textTexture,calculateMatrix(scaleX, scaleY));
+    }
+
+    fun drawBubbleRect(programId: Int, index: Int, scaleX: Float, scaleY: Float) {
+        drawRect(programId,index,currentTexture,calculateMatrix(scaleX, scaleY));
+    }
+
     fun bindTextures(textureIds: IntArray, index: Int) {
-        texture = bindTexture(textureIds, index * 2, false)
-        imageTexture = bindTexture(textureIds, index * 2 + 1, true)
+        texture = bindTexture(textureIds, index * 3, createBackgroundBitmap(false))
+        imageTexture = bindTexture(textureIds, index * 3 + 1, createBackgroundBitmap(true))
+        textTexture = bindTexture(textureIds, index * 3 + 2, createTextBitmap())
+    }
+
+    private fun createBackgroundBitmap(isSelected: Boolean):Bitmap{
+        var bitmap = createBitmap(isSelected)
+        var canvas = Canvas(bitmap)
+        if (isSelected) drawImage(canvas)
+        drawBackground(canvas, isSelected)
+        drawIcon(canvas)
+        return bitmap
+    }
+
+    private fun createTextBitmap():Bitmap{
+        var bitmap = createBitmap(false)
+        var canvas = Canvas(bitmap)
+        drawText(canvas)
+        return bitmap
     }
 
     private fun createBitmap(isSelected: Boolean): Bitmap {
         var bitmap = Bitmap.createBitmap(bitmapSize.toInt(), bitmapSize.toInt(), Bitmap.Config.ARGB_4444)
         val bitmapConfig: Bitmap.Config = bitmap.config ?: Bitmap.Config.ARGB_8888
         bitmap = bitmap.copy(bitmapConfig, true)
-
-        val canvas = Canvas(bitmap)
-
-        if (isSelected) drawImage(canvas)
-        drawBackground(canvas, isSelected)
-        drawIcon(canvas)
-        drawText(canvas)
-
         return bitmap
     }
 
@@ -158,13 +176,13 @@ data class MyItem(val pickerItem: PickerItem, val circleBody: CircleBody) {
         }
     }
 
-    private fun bindTexture(textureIds: IntArray, index: Int, withImage: Boolean): Int {
+    private fun bindTexture(textureIds: IntArray, index: Int, bitmap: Bitmap): Int {
         glGenTextures(1, textureIds, index)
-        createBitmap(withImage).toTexture(textureIds[index])
+        bitmap.toTexture(textureIds[index])
         return textureIds[index]
     }
 
-    private fun calculateMatrix(scaleX: Float, scaleY: Float) = FloatArray(16).apply {
+    public fun calculateMatrix(scaleX: Float, scaleY: Float) = FloatArray(16).apply {
         Matrix.setIdentityM(this, 0)
         Matrix.translateM(this, 0, currentPosition.x * scaleX - initialPosition.x,
                 currentPosition.y * scaleY - initialPosition.y, 0f)

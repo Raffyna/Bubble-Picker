@@ -20,6 +20,7 @@ object Engine {
         get() = bodies.filter { it.increased || it.toBeIncreased || it.isIncreasing }
 
 
+    var oldTime = 0L
     var maxSelectedCount: Int? = null
     var radius = 50
         set(value) {
@@ -41,7 +42,7 @@ object Engine {
     private val bodies: ArrayList<CircleBody> = ArrayList()
 
     private var borders: ArrayList<Border> = ArrayList()
-    private val resizeStep = 0.005f
+    private val resizeDuration = 0.25f //fabricio seconds
     private var scaleX = 0f
     private var scaleY = 0f
     private var touch = false
@@ -84,8 +85,16 @@ object Engine {
     }
 
     fun move() {
-        toBeIncrease.forEach { it.circleBody.resize(resizeStep, bodies.size, canZoom, numberBubbleActive) }
-        toBeDescrease.forEach { it.circleBody.resize(resizeStep, bodies.size, canZoom, numberBubbleActive) }
+
+        val newTime = System.currentTimeMillis()
+        if (oldTime == 0L) oldTime = newTime
+
+        val delta = (newTime-oldTime)/1000f
+        oldTime = newTime
+
+        toBeIncrease.forEach { it.circleBody.resize(delta/ resizeDuration, bodies.size, canZoom, numberBubbleActive) }
+        toBeDescrease.forEach { it.circleBody.resize(delta/ resizeDuration, bodies.size, canZoom, numberBubbleActive) }
+
 
         world.step(if (centerImmediately) 0.035f else step, 11, 11)
         bodies.forEach { move(it) }
@@ -160,7 +169,13 @@ object Engine {
         if (item.radius <= 0.1) {
             canZoom = true
         }
+
+        for(circle in otherItems){
+            circle.circleBody.resizeStart()
+        }
+
         toBeDescrease = otherItems
+        item.circleBody.resizeStart()
         toBeIncrease.add(item)
 
         return true
