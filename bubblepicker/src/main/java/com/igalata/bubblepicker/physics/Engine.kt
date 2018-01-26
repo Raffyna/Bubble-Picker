@@ -56,7 +56,7 @@ object Engine {
     private var toBeDescrease = ArrayList<MyItem>()
 
     private val startX
-        get() = if (centerImmediately) 0.5f else 2.2f
+        get() = if (centerImmediately) 0.5f else 1.2f
     private var stepsCount = 0
 
     private var canZoom = true
