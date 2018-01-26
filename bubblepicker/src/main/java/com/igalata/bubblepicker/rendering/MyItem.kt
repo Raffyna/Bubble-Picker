@@ -34,6 +34,8 @@ data class MyItem(val pickerItem: PickerItem, val circleBody: CircleBody) {
     val currentPosition: Vec2
         get() = circleBody.physicalBody.position
 
+    var textPixelSize: Vec2 = Vec2(0f,0f)
+
     private var isVisible = true
         get() = circleBody.isVisible
     private var texture: Int = 0
@@ -127,6 +129,8 @@ data class MyItem(val pickerItem: PickerItem, val circleBody: CircleBody) {
             paint.textSize--
             textLayout = placeText(paint)
         }
+
+        textPixelSize =  Vec2(textLayout.width/bitmapSize,textLayout.height/bitmapSize);
 
         if (pickerItem.icon == null) {
             canvas.translate((bitmapSize - textLayout.width) / 2f, (bitmapSize - textLayout.height) / 2f)
