@@ -16,6 +16,7 @@ import com.igalata.bubblepicker.rendering.BubbleShader.A_UV
 import com.igalata.bubblepicker.rendering.BubbleShader.U_BACKGROUND
 import com.igalata.bubblepicker.rendering.BubbleShader.fragmentShader
 import com.igalata.bubblepicker.rendering.BubbleShader.vertexShader
+import org.jbox2d.collision.AABB
 import org.jbox2d.common.Vec2
 import java.nio.FloatBuffer
 import java.util.*
@@ -178,10 +179,25 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
 
     fun release() = Engine.release()
 
-    private fun getItem(position: Vec2) = position.let {
-        val x = it.x.convertPoint(glView.width, scaleX)
-        val y = it.y.convertPoint(glView.height, scaleY)
-        circles.find { Math.sqrt(((x - it.x).sqr() + (y - it.y).sqr()).toDouble()) <= it.radius }
+    private fun AABBcheck(aabb: AABB,point:Vec2): Boolean{
+
+        return (aabb.lowerBound.x<=point.x && point.x<=aabb.upperBound.x &&
+                aabb.lowerBound.y<=point.y && point.y<=aabb.upperBound.y)
+    }
+
+    private fun getItem(position: Vec2):MyItem?{
+        val x = position.x.convertPoint(glView.width, scaleX)
+        val y = position.y.convertPoint(glView.height, scaleY)
+        val item = circles.find { Math.sqrt(((x - it.x).sqr() + (y - it.y).sqr()).toDouble()) <= it.radius }
+        if(item!=null){
+            return item
+        }
+
+        //return item
+        return circles.find{
+            val ts = Vec2(it.textPixelSize.x*0.26f*scaleX,it.textPixelSize.y*0.26f*scaleY)
+            AABBcheck(AABB(Vec2(x,y).sub(ts),Vec2(x,y).add(ts)),Vec2(it.x,it.y))
+        }
     }
 
     fun resize(x: Float, y: Float) = getItem(Vec2(x, glView.height - y))?.apply {
