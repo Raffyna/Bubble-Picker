@@ -130,7 +130,10 @@ data class MyItem(val pickerItem: PickerItem, val circleBody: CircleBody) {
             textLayout = placeText(paint)
         }
 
-        textPixelSize =  Vec2(textLayout.width/bitmapSize,textLayout.height/bitmapSize);
+        val bounds = Rect()
+
+        paint.getTextBounds(pickerItem.title?:"", 0, pickerItem.title?.length?:0, bounds)
+        textPixelSize =  Vec2(textLayout.width/bitmapSize,bounds.height()/bitmapSize)
 
         if (pickerItem.icon == null) {
             canvas.translate((bitmapSize - textLayout.width) / 2f, (bitmapSize - textLayout.height) / 2f)
@@ -188,8 +191,8 @@ data class MyItem(val pickerItem: PickerItem, val circleBody: CircleBody) {
 
     public fun calculateMatrix(scaleX: Float, scaleY: Float) = FloatArray(16).apply {
         Matrix.setIdentityM(this, 0)
-        Matrix.translateM(this, 0, currentPosition.x * scaleX - initialPosition.x,
-                currentPosition.y * scaleY - initialPosition.y, 0f)
+        Matrix.translateM(this, 0, currentPosition.x * scaleX,
+                currentPosition.y * scaleY, 0f)
     }
 
 }
