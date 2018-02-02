@@ -132,12 +132,10 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
         val textW = textSize*scaleX
         val textH = textSize*scaleY
 
-        body.initialPosition.apply {
-            vertices?.put(8 * index, floatArrayOf(x - radiusX, y + radiusY, x - radiusX, y - radiusY,
-                    x + radiusX, y + radiusY, x + radiusX, y - radiusY))
-            textVertices?.put(8 * index, floatArrayOf(x - textW, y + textH, x - textW, y - textH,
-                    x + textW, y + textH, x + textW, y - textH))
-        }
+        vertices?.put(8 * index, floatArrayOf(-radiusX, radiusY, -radiusX, -radiusY,
+                radiusX, radiusY, radiusX, -radiusY))
+         textVertices?.put(8 * index, floatArrayOf(-textW, textH, - textW,- textH,
+                 textW, textH, textW, -textH))
     }
 
     private fun drawFrame() {
@@ -188,16 +186,18 @@ class PickerRenderer(val glView: View) : GLSurfaceView.Renderer {
     private fun getItem(position: Vec2):MyItem?{
         val x = position.x.convertPoint(glView.width, scaleX)
         val y = position.y.convertPoint(glView.height, scaleY)
-        val item = circles.find { Math.sqrt(((x - it.x).sqr() + (y - it.y).sqr()).toDouble()) <= it.radius }
-        if(item!=null){
-            return item
-        }
 
-        //return item
-        return circles.find{
+        val item = circles.find{
             val ts = Vec2(it.textPixelSize.x*0.26f*scaleX,it.textPixelSize.y*0.26f*scaleY)
             AABBcheck(AABB(Vec2(x,y).sub(ts),Vec2(x,y).add(ts)),Vec2(it.x,it.y))
         }
+
+        if(item!=null){
+            return item
+        }
+        
+        return circles.find { Math.sqrt(((x - it.x).sqr() + (y - it.y).sqr()).toDouble()) <= it.radius }
+        
     }
 
     fun resize(x: Float, y: Float) = getItem(Vec2(x, glView.height - y))?.apply {
